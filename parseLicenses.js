@@ -2,9 +2,6 @@ const { spawn } = require('child_process');
 var fs = require('fs');
 
 const npmList = spawn('npm', ['ls', '--json', '--prod', '--long']);
-// const myWriteStream = fs.createWriteStream('./writeMe.txt');
-
-// npmList.stdout.pipe(myWriteStream);
 
 let stdoutData = [];
 
@@ -22,7 +19,9 @@ npmList.on('close', (code) => {
   let resultJSON = parseDependencies(stdoutJSON, []);
   let resultCSV = jsonToCSV(resultJSON, ['name', 'license', 'direct parent']);
 
-  console.log(resultCSV);
+  // TODO: arrange CSV in alphabetical order, maybe?
+
+  createAsset('./licenses', 'licenses.csv', resultCSV);
 });
 
 function parseDependencies(json, resultArray) {
@@ -30,7 +29,7 @@ function parseDependencies(json, resultArray) {
     return;
   }
 
-  Object.values(json.dependencies).forEach((currentValue) => {
+  Object.values(json.dependencies).forEach((currentValue, idx, array) => {
     // TODO: Check if name entry already exists; if it does, add multiple parents
     resultArray.push({
       name: currentValue.name,
@@ -57,7 +56,6 @@ function csvLine(array) {
 
 function jsonToCSV(json, fieldNamesArray) {
   // TODO: check if json fields number is equal to field names number
-
   let result = '';
 
   result = result + csvLine(fieldNamesArray);
@@ -69,6 +67,24 @@ function jsonToCSV(json, fieldNamesArray) {
   return result;
 }
 
-// TODO - create folder for licenses if it doesn't exist
+function createAsset(directoryName, fileName, data) {
+  // TODO - check validity of path
+  let path = directoryName + '/' + fileName;
 
-// npmList.stdout.pipe(myWriteStream);
+  fs.access(directoryName, (err) => {
+    if (err) {
+      fs.mkdir(directoryName, (err) => {
+        if (err) throw err;
+        fs.writeFile(path, data, (err) => {
+          if (err) throw err;
+          console.log('Generated CSV');
+        });
+      })
+    } else {
+      fs.writeFile(path, data, (err) => {
+        if (err) throw err;
+        console.log('Generated CSV');
+      });
+    }
+  })
+}
