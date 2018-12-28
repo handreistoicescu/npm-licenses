@@ -17,7 +17,7 @@ npmList.on('close', (code) => {
   let stdoutText = stdoutData.join('');
   let stdoutJSON = JSON.parse(stdoutText);
   let resultJSON = parseDependencies(stdoutJSON, [], {});
-  let resultCSV = jsonToCSV(resultJSON, ['name', 'license', 'direct parent']);
+  let resultCSV = jsonToCSV(resultJSON, ['name', 'direct parents', 'license']);
 
   // TODO: arrange CSV in alphabetical order, maybe?
 
@@ -32,13 +32,29 @@ function parseDependencies(json, resultArray, indexStore) {
   Object.values(json.dependencies).forEach((currentValue, idx, array) => {
     // TODO: Check if name entry already exists; if it does, add multiple parents
     if (indexStore[currentValue.name]) {
-      resultArray[indexStore[currentValue.name]].directParent += ', ' + json.name;
+      // if the parent is already added from another instance, don't add it again
+      let parentText = resultArray[indexStore[currentValue.name]].directParents;
+
+      if (parentText.indexOf(json.name) === -1) {
+        resultArray[indexStore[currentValue.name]].directParents += '\r\n' + json.name;
+      }
     } else {
-      const arrLength = resultArray.push({
+      const entry = {
         name: currentValue.name,
-        license: currentValue.license,
-        directParent: json.name
-      });
+        directParents: json.name
+      }
+      // some licenses are stored in an array of objects that contain a 'type' property and a 'url' property
+      // but most of them are primitives (strings)
+      if (typeof currentValue.license === 'object') {
+        entry.license = currentValue.license.type + '\r\n' + currentValue.license.url;
+      } else if(typeof currentValue.licenses === 'object') {
+        entry.license = currentValue.licenses[0].type + '\r\n' + currentValue.licenses[0].url;
+      } else {
+        entry.license = currentValue.license;
+      }
+
+      const arrLength = resultArray.push(entry);
+
       // put the index in the index store
       indexStore[currentValue.name] = arrLength - 1;
     }
