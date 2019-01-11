@@ -30,7 +30,7 @@ function parseDependencies(json, resultArray, indexStore) {
   }
 
   Object.values(json.dependencies).forEach((currentValue, idx, array) => {
-    // TODO: Check if name entry already exists; if it does, add multiple parents
+    // Check if name entry already exists; if it does, add multiple parents
     if (indexStore[currentValue.name]) {
       // if the parent is already added from another instance, don't add it again
       let parentText = resultArray[indexStore[currentValue.name]].directParents;
