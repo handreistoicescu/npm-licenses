@@ -1,14 +1,14 @@
 {
   "name": "npm-licenses",
   "version": "1.0.0",
-  "description": "",
+  "description": "Parses the npm dependency tree, generating a csv file that contains the names of said dependencies, the direct parent, the root dependency and the license type",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "node parseLicenses.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Andrei Stoicescu",
+  "license": "MIT",
   "dependencies": {
     "assemble": "^0.24.3",
     "react": "^16.7.0"
